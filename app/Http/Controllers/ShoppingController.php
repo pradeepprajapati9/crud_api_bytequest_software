@@ -13,12 +13,13 @@ class ShoppingController extends Controller
     public function GetAllProduct()
     {
         $product = addproduct::all();
-        return response()->json($product);
+        return response()->json(['product' => $product]);
     }
 
     // create and store prodcut
     public function Storeproduct(Request $req)
     {
+
         $product = new addproduct;
         $product->title = $req->title;
         $product->description = $req->description;
@@ -26,41 +27,38 @@ class ShoppingController extends Controller
         $product->offer = $req->offer;
         $product->important_note = $req->important_note;
         $product->product_details = $req->product_details;
-        $product->file = $req->file;
+        $product->file = $req->file('file')->store('storephoto', 'public');
         $product->save();
-
-        $res=[
-          "message"=>"Product Created Successfully"
-        ];
-        return response()->json($res);
+        return response()->json(['res' => 'Product Created Successfully']);
     }
 
     // delete product
     public function DeleteProduct($id)
     {
-        $product = addproduct::find($id);
-        $product->delete();
-        $res = [
-            'message' => 'Product deleted successfully'
-        ];
-        return response()->json($res);
+        addproduct::where('id', $id)->delete();
+        return response()->json(['res' => 'Product deleted successfully']);
     }
 
     // update product
-    public function update(Request $req, $id)
+    public function edit($id)
     {
-        $product = addproduct::find($id);
+        $product = addproduct::where('id', $id)->get();
+        return view('assigmentApi.edit', ['product' => $product]);
+    }
+
+    public function updataProduct(Request $req)
+    {
+        $product = addproduct::find($req->id);
         $product->title = $req->title;
         $product->description = $req->description;
         $product->price = $req->price;
         $product->offer = $req->offer;
         $product->important_note = $req->important_note;
         $product->product_details = $req->product_details;
-        $product->file = $req->file;
-        $product->update();
-        $res = [
-            "message" => " Product Updated Successfully"
-        ];
-        return response()->json($res);
+        if ($req->file('file')) {
+            $product->file = $req->file('file')->store('storephoto', 'public');
+        }
+        $product->save();
+        return response()->json(["res" => " Product Updated Successfully"]);
     }
 }
